@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Earshot · Neighbourhood Noise Map</title>
+  <meta name="description" content="See how loud a street gets by day and at night before you rent. A free, community-powered noise map built on open data." />
+  <meta property="og:title" content="Earshot · Is it quiet at night? Check before you rent." />
+  <meta property="og:description" content="A free map of day and night noise for any street, plus reports from people who live there." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://rameshreddyin.github.io/earshot/" />
+  <meta property="og:image" content="https://rameshreddyin.github.io/earshot/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Earshot · Is it quiet at night? Check before you rent." />
+  <meta name="twitter:description" content="A free map of day and night noise for any street, plus reports from people who live there." />
+  <meta name="twitter:image" content="https://rameshreddyin.github.io/earshot/og-image.png" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <!-- SF Pro is used on Apple devices through the system font stack; Inter is the closest free match elsewhere -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+  <header class="globalnav">
+    <a class="wordmark" href="./">Earshot</a>
+    <nav class="nav-links">
+      <a href="./" aria-current="page">Noise Map</a>
+      <button type="button" data-open-method>How It Works</button>
+    </nav>
+    <button id="reportBtn" class="btn-blue btn-small">Report noise</button>
+  </header>
+
+  <main class="layout">
+    <aside class="side" id="side">
+      <div id="sideHead" class="side-head"></div>
+
+      <div class="controls" id="controls">
+        <div class="segmented" role="group" aria-label="Time of day">
+          <button type="button" data-period="day" aria-pressed="true">Day</button>
+          <button type="button" data-period="night" aria-pressed="false">Night</button>
+        </div>
+
+        <div class="search" role="search">
+          <i data-lucide="search"></i>
+          <input id="search" type="search" placeholder="Search an address or neighbourhood" autocomplete="off" spellcheck="false" aria-label="Search places" />
+          <ul id="results" class="results" role="listbox" hidden></ul>
+        </div>
+      </div>
+
+      <div id="sideBody" class="side-body"></div>
+    </aside>
+
+    <section class="map-wrap">
+      <div id="map" aria-label="Noise map"></div>
+
+      <div class="legend">
+        <div class="legend-bar">
+          <span style="background:#34c759"></span><span style="background:#ffcc00"></span><span style="background:#ff9500"></span><span style="background:#ff3b30"></span><span style="background:#af52de"></span>
+        </div>
+        <div class="legend-labels"><span>Quiet</span><span>Very loud</span></div>
+        <label class="switch">
+          <span>Show street noise</span>
+          <input type="checkbox" id="toggleLayer" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <div class="map-controls">
+        <button id="zoomIn" class="ctrl" aria-label="Zoom in"><i data-lucide="plus"></i></button>
+        <button id="zoomOut" class="ctrl" aria-label="Zoom out"><i data-lucide="minus"></i></button>
+        <button id="locate" class="ctrl" aria-label="Use my location"><i data-lucide="locate-fixed"></i></button>
+      </div>
+
+      <div id="status" class="status" hidden></div>
+      <div id="hoverTip" class="hover-tip" hidden></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <dialog id="methodDialog" class="method">
+    <button type="button" class="method-close" data-close-method aria-label="Close"><i data-lucide="x"></i></button>
+    <h2>How the estimate works.</h2>
+    <p>Earshot reads the streets, railways, runways and venues around a spot from OpenStreetMap. Each one has a typical sound level and a daily rhythm: rush hours on main roads, music after 10 PM near bars, loudspeakers at dawn and dusk near places of worship, the school run on weekday mornings.</p>
+    <p>Sound fades with distance and drops further behind the first row of buildings. Every source is added up hour by hour. Day is 7 AM to 10 PM and night is 10 PM to 7 AM, the same split the WHO uses for its guideline limits of 53 dB by day and 45 dB at night.</p>
+    <p>It is an estimate, not a measurement. Traffic volume, building layout and one-off events change what you actually hear, which is why reports from people who live there matter.</p>
+    <dl class="method-sources">
+      <div><dt>Streets, rail, venues</dt><dd>OpenStreetMap, via the Overpass API</dd></div>
+      <div><dt>Base map</dt><dd>OpenFreeMap</dd></div>
+      <div><dt>Address search</dt><dd>Photon by Komoot</dd></div>
+    </dl>
+  </dialog>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
