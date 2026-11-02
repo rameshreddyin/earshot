@@ -1,5 +1,5 @@
 // Community reports. Uses Supabase when configured, otherwise this browser only.
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=4';
 
 export const REPORT_TYPES = {
   traffic:      { label: 'Traffic',        icon: 'car' },

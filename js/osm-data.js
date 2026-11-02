@@ -1,7 +1,7 @@
 // Loads noise sources from OpenStreetMap (Overpass API) in fixed tiles,
 // caches them in the browser and feeds them into the noise index.
-import { CONFIG } from './config.js';
-import { NoiseIndex } from './noise-model.js';
+import { CONFIG } from './config.js?v=4';
+import { NoiseIndex } from './noise-model.js?v=4';
 
 export const TILE = 0.02; // degrees, roughly 2 km
 const CACHE_NAME = 'earshot-osm-v2';

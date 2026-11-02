@@ -1,5 +1,5 @@
 // Level scale and 24 hour bar chart.
-import { RAMP, rgb, DAY_HOURS } from './noise-model.js';
+import { RAMP, rgb, DAY_HOURS } from './noise-model.js?v=4';
 
 const MIN = 30, MAX = 80;
 const pct = (db) => Math.min(Math.max((db - MIN) / (MAX - MIN), 0), 1) * 100;

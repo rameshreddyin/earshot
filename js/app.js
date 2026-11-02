@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js';
-import { OsmTiles, tileKey, tileOf } from './osm-data.js';
-import { NoiseLayer } from './noise-layer.js';
-import { levelLabel, comparison } from './noise-model.js';
-import { scaleHTML, barsSVG, bindBars, hourLabel } from './charts.js';
-import { REPORT_TYPES, TIME_SLOTS, LOUDNESS, fetchReports, addReport, storeMode } from './store.js';
-import { measure } from './meter.js';
+import { CONFIG } from './config.js?v=4';
+import { OsmTiles, tileKey, tileOf } from './osm-data.js?v=4';
+import { NoiseLayer } from './noise-layer.js?v=4';
+import { levelLabel, comparison } from './noise-model.js?v=4';
+import { scaleHTML, barsSVG, bindBars, hourLabel } from './charts.js?v=4';
+import { REPORT_TYPES, TIME_SLOTS, LOUDNESS, fetchReports, addReport, storeMode } from './store.js?v=4';
+import { measure } from './meter.js?v=4';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];

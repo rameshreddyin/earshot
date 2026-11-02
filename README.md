@@ -51,6 +51,8 @@ python3 -m http.server 5173
 
 Then open http://localhost:5173. There is no build step.
 
+When you publish an update, bump the `?v=` number on the file links in `index.html` and the imports in `js/` so returning visitors don't mix cached old files with new ones.
+
 ## Deploy for free
 
 Any static host works. Pick one:

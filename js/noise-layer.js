@@ -1,5 +1,5 @@
 // Draws every street and rail line in its noise colour, so the base map stays sharp.
-import { RAMP, rgb } from './noise-model.js';
+import { RAMP, rgb } from './noise-model.js?v=4';
 
 const SOURCE = 'noise-streets';
 const LAYER = 'noise-streets';
