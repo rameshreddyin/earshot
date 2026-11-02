@@ -11,6 +11,68 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icons = () => window.lucide?.createIcons({ attrs: { 'stroke-width': 1.7 } });
 const round = Math.round;
+const isPhone = () => matchMedia('(max-width: 760px)').matches;
+const tapWord = matchMedia('(hover: none)').matches ? 'Tap' : 'Click';
+
+// ---------- phone bottom sheet ----------
+// On phones the map is full screen and the details live in a sheet that
+// snaps between three heights. No animation: it jumps straight to the size.
+
+const sheet = document.getElementById('side');
+const TOP_UI = 116; // floating search and Day/Night above the map
+const snaps = () => ({ min: 150, mid: Math.round(innerHeight * 0.46), max: innerHeight - TOP_UI - 26 });
+let sheetState = 'min';
+
+function setSheet(target) {
+  if (!isPhone()) {
+    sheet.style.height = '';
+    document.documentElement.style.removeProperty('--sheet-h');
+    return;
+  }
+  const s = snaps();
+  if (typeof target === 'string') sheetState = target;
+  const h = typeof target === 'number' ? Math.min(Math.max(target, s.min), s.max) : s[sheetState];
+  sheet.style.height = `${h}px`;
+  document.documentElement.style.setProperty('--sheet-h', `${h}px`);
+}
+
+function nearestSnap(h) {
+  const s = snaps();
+  return Object.keys(s).reduce((a, b) => (Math.abs(s[b] - h) < Math.abs(s[a] - h) ? b : a));
+}
+
+// centre a point in the strip of map that is visible above the sheet
+function jumpToVisible(lon, lat, zoom) {
+  const opts = { center: [lon, lat], duration: 0 };
+  if (zoom) opts.zoom = zoom;
+  if (isPhone()) {
+    const h = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sheet-h')) || 0;
+    opts.offset = [0, (TOP_UI - h) / 2];
+  }
+  map.easeTo(opts);
+}
+
+{
+  const grip = document.getElementById('sheetGrip');
+  let startY = 0, startH = 0, moved = false;
+  grip.addEventListener('pointerdown', (e) => {
+    startY = e.clientY;
+    startH = sheet.getBoundingClientRect().height;
+    moved = false;
+    grip.setPointerCapture(e.pointerId);
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if (!grip.hasPointerCapture(e.pointerId)) return;
+    if (Math.abs(e.clientY - startY) > 4) moved = true;
+    if (moved) setSheet(startH + (startY - e.clientY));
+  });
+  grip.addEventListener('pointerup', (e) => {
+    grip.releasePointerCapture(e.pointerId);
+    if (moved) setSheet(nearestSnap(sheet.getBoundingClientRect().height));
+    else setSheet(sheetState === 'max' ? 'mid' : sheetState === 'mid' ? 'max' : 'mid');
+  });
+  addEventListener('resize', () => setSheet(sheetState));
+}
 
 // ---------- state ----------
 
@@ -164,6 +226,10 @@ async function select(lat, lon, place = null) {
   spotPin.setLngLat([lon, lat]).addTo(map);
   updateUrl();
   render();
+  if (sheetState === 'min') setSheet('mid');
+  sheet.scrollTop = 0;
+  // if the spot is now hidden behind the sheet, bring it into the visible strip
+  if (isPhone() && map.project([lon, lat]).y > sheet.getBoundingClientRect().top - 48) jumpToVisible(lon, lat);
 
   if (!place) {
     reverseGeocode(lat, lon).then((p) => {
@@ -195,6 +261,8 @@ function backToMap() {
   spotPin?.remove();
   updateUrl();
   render();
+  setSheet('min');
+  sheet.scrollTop = 0;
 }
 
 function updateUrl() {
@@ -275,8 +343,8 @@ function pickResult(i) {
   hideResults();
   searchInput.value = '';
   searchInput.blur();
-  map.jumpTo({ center: [r.lon, r.lat], zoom: Math.max(map.getZoom(), 16) });
   select(r.lat, r.lon, { title: r.title, sub: r.sub });
+  jumpToVisible(r.lon, r.lat, Math.max(map.getZoom(), 16));
 }
 
 results.addEventListener('mousedown', (e) => {
@@ -329,8 +397,8 @@ $('#locate').addEventListener('click', () => {
   navigator.geolocation.getCurrentPosition((pos) => {
     btn.disabled = false;
     const { latitude: lat, longitude: lon } = pos.coords;
-    map.jumpTo({ center: [lon, lat], zoom: 16 });
     select(lat, lon);
+    jumpToVisible(lon, lat, 16);
   }, () => {
     btn.disabled = false;
     toast('Could not get your location.');
@@ -363,7 +431,7 @@ function renderBrowse() {
   sideBody.innerHTML = `
     <section class="section">
       <div class="section-title">Pick a spot.</div>
-      <p class="copy" style="margin-top:8px">Click anywhere on the map or search an address. You will see its daytime and night levels, what makes the noise, and what neighbours report.</p>
+      <p class="copy" style="margin-top:8px">${tapWord} anywhere on the map or search an address. You will see its daytime and night levels, what makes the noise, and what neighbours report.</p>
     </section>
     <section class="section">
       <div class="section-head">
@@ -657,7 +725,7 @@ function openReport(at) {
     <form id="reportForm" class="form">
       <div class="field">
         <div class="field-label">Location.</div>
-        <div class="field-hint">Click the map or drag the pin to move it.</div>
+        <div class="field-hint">${tapWord} the map or drag the pin to move it.</div>
         <div class="where" id="reportPlace">Finding address</div>
       </div>
       <div class="field">
@@ -701,7 +769,9 @@ function openReport(at) {
   $('#reportForm').addEventListener('submit', submitReport);
   setReportPin(loc.lat, loc.lon);
   icons();
-  $('#side').scrollTop = 0;
+  sheet.scrollTop = 0;
+  setSheet('mid'); // half height keeps the pin visible on phones
+  jumpToVisible(loc.lon, loc.lat);
 }
 
 function closeReport() {
@@ -761,7 +831,7 @@ async function submitReport(e) {
   const type = $('input[name=type]:checked')?.value;
   const slot = $('input[name=slot]:checked')?.value;
   if (!type) { toast('Choose what kind of noise you hear.'); return; }
-  if (!reportLoc) { toast('Click the map to place your report.'); return; }
+  if (!reportLoc) { toast(`${tapWord} the map to place your report.`); return; }
   const btn = $('#submitReport');
   btn.disabled = true;
   try {
@@ -790,3 +860,4 @@ $('#reportBtn').addEventListener('click', () => (state.mode === 'report' ? close
 
 render();
 icons();
+setSheet('min');

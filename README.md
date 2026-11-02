@@ -24,6 +24,8 @@
 
 Apple-style interface: system font, Apple greys and blue, solid white surfaces, segmented controls and configurator-style option tiles. No glass, no animations.
 
+On phones the map is full screen and fully interactive, with search and Day/Night floating on top and the details in a bottom sheet that snaps between three heights (drag or tap the handle).
+
 ## Free data and services (no API keys)
 
 | Need | Service | Notes |
